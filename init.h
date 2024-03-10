@@ -2,9 +2,10 @@
 #define init_h
 
 #include <iostream>
+#include <map>
 using namespace std;
 
 vector<string> splitCommand(string command);
-void initialize();
+void initialize(std::map<std::string, std::string> &args);
 
 #endif

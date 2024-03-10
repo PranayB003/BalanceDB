@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <map>
 #include "init.h"
 using namespace std;
 
@@ -21,10 +22,5 @@ int main(int argc, char* argv[]){
         }
     }
 
-    // Print out the contents of the map
-    for (const auto& pair : arguments) {
-        std::cout << "Key: " << pair.first << ", Value: " << pair.second << std::endl;
-    }
-
-    initialize(&arguments);  //init.cpp
+    initialize(arguments);  //init.cpp
 }
