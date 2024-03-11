@@ -12,7 +12,7 @@
 
 using namespace std;
 
-std::vector<std::string> split_string(std::string& str, char delimiter) {
+std::vector<std::string> splitString(std::string& str, char delimiter) {
     std::vector<std::string> tokens;
     std::string token;
     std::size_t pos = 0;
@@ -40,7 +40,7 @@ void initialize(std::map<std::string, std::string> &args){
     nodeInfo.sp.specifyPortServer(given_port);
 
     if (args.find("mode") != args.end()) {
-        std::vector<std::string> mode_params = split_string(args["mode"], ',');
+        std::vector<std::string> mode_params = splitString(args["mode"], ',');
         if (mode_params.size() == 1 && mode_params[0] == "create") {
             thread first(create,ref(nodeInfo));
             first.detach();

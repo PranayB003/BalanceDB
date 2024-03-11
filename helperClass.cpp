@@ -415,7 +415,8 @@ lli HelperFunctions::getSuccessorId(string ip,int port){
     char msg[] = "finger";
 
     if (sendto(sock, msg, strlen(msg) , 0, (struct sockaddr*) &serverToConnectTo, l) == -1){
-        cout<<"yaha 11 "<<sock<<endl;
+        cout << "yaha 11 " << sock <<'\n';
+        cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
         exit(-1);
     }
@@ -480,7 +481,8 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
     strcpy(ipAndPortChar,msg.c_str());
 
     if (sendto(sock, ipAndPortChar, strlen(ipAndPortChar), 0, (struct sockaddr*) &serverToConnectTo, l) < 0){
-        cout<<"yaha 12 "<<sock<<endl;
+        cout << "yaha 12 " << sock << '\n';
+        cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
         exit(-1);
     }

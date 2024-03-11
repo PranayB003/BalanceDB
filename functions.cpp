@@ -115,7 +115,8 @@ void join(NodeInformation &nodeInfo,string ip,string port){
 
     /* node sends it's id to main node to find it's successor */
     if (sendto(sock, charNodeId, strlen(charNodeId), 0, (struct sockaddr*) &server, l) == -1){
-        cout<<"yaha 1\n";
+        cout << "yaha 1\n";
+        cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
         exit(-1);
     }
@@ -124,7 +125,8 @@ void join(NodeInformation &nodeInfo,string ip,string port){
     char ipAndPort[40];
     int len;
     if ((len = recvfrom(sock, ipAndPort, 1024, 0, (struct sockaddr *) &server, &l)) == -1){
-        cout<<"yaha 2\n";
+        cout << "yaha 2\n";
+        cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
         exit(-1);
     }

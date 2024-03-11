@@ -2,6 +2,7 @@
 #define functions_h
 
 #include <iostream>
+#include <string.h>
 
 #include "port.h"
 #include "nodeInformation.h"
