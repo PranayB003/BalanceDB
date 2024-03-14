@@ -53,6 +53,29 @@ void get(string key,NodeInformation nodeInfo){
     }
 }
 
+/* slimmed down versions of get() and put() for use by the HTTP server */
+std::string putForHttp(string key,string value,NodeInformation &nodeInfo){
+    if(key == "" || value == ""){
+        return "ERROR: key and value must be non-empty\n";
+    } else {
+        lli keyHash = help.getHash(key);
+        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
+        help.sendKeyToNode(node,keyHash,value);
+        return "OK";
+    }
+}
+std::string getForHttp(string key,NodeInformation nodeInfo){
+    if(key == ""){
+        return "ERROR: Key field must be non-empty";
+    } else {
+        lli keyHash = help.getHash(key);
+        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
+        string val = help.getKeyFromNode(node,to_string(keyHash));
+        return val;
+    }
+}
+
+
 /* create a new ring */
 void create(NodeInformation &nodeInfo){
 

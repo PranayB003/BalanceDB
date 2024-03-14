@@ -120,106 +120,102 @@ vector< pair<lli , string> > NodeInformation::getKeysForPredecessor(lli nodeId){
 }
 
 pair< pair<string,int> , lli > NodeInformation::findSuccessor(lli nodeId){
+    pair < pair<string,int> , lli > self;
+    self.first.first = sp.getIpAddress();
+    self.first.second = sp.getPortNumber();
+    self.second = id;
 
-	pair < pair<string,int> , lli > self;
-	self.first.first = sp.getIpAddress();
-	self.first.second = sp.getPortNumber();
-	self.second = id;
+    if(nodeId > id && nodeId <= successor.second){
+        return successor;
+    }
 
-	if(nodeId > id && nodeId <= successor.second){
-		return successor;
-	}
+    else if(id == successor.second || nodeId == id){
+        return self;
+    }
 
-	/* */
-	else if(id == successor.second || nodeId == id){
-		return self;
-	}
+    else if(successor.second == predecessor.second){
+        if(successor.second >= id){
+            if(nodeId > successor.second || nodeId < id)
+                return self;
+            else
+                return successor;
+        } else{
+            if((nodeId > id && nodeId > successor.second) || (nodeId < id && nodeId < successor.second))
+                return successor;
+            else
+                return self;
+        }
+    } else{
+        pair < pair<string,int> , lli > node = closestPrecedingNode(nodeId);
+        if(node.second == id){
+            return successor;
+        }
+        else{
+            /* connect to node which will now find the successor */
+            struct sockaddr_in serverToConnectTo;
+            socklen_t len = sizeof(serverToConnectTo);
 
-	else if(successor.second == predecessor.second){
-		if(successor.second >= id){
-			if(nodeId > successor.second || nodeId < id)
-				return self;
-		}
-		else{
-			if((nodeId > id && nodeId > successor.second) || (nodeId < id && nodeId < successor.second))
-				return successor;
-			else
-				return self;
-		}
-	}
+            string ip;
+            int port;
 
-	else{
+            /* if this node couldn't find closest preciding node for given node id 
+             * then ask it's successor to do so */
+            if(node.second == -1){
+                node = successor;
+            }
 
-		pair < pair<string,int> , lli > node = closestPrecedingNode(nodeId);
-		if(node.second == id){
-			return successor;
-		}
-		else{
+            HelperFunctions help;
 
-			/* connect to node which will now find the successor */
-			struct sockaddr_in serverToConnectTo;
-			socklen_t len = sizeof(serverToConnectTo);
+            help.setServerDetails(serverToConnectTo,node.first.first,node.first.second);
 
-			string ip;
-			int port;
-
-			/* if this node couldn't find closest preciding node for given node id then now ask it's successor to do so */
-			if(node.second == -1){
-				node = successor;
-			}
-
-			HelperFunctions help;
-
-			help.setServerDetails(serverToConnectTo,node.first.first,node.first.second);
-
-			/* set timer on this socket */
-    		struct timeval timer;
-    		help.setTimer(timer);
+            /* set timer on this socket */
+            struct timeval timer;
+            help.setTimer(timer);
 
 
-			int sockT = socket(AF_INET,SOCK_DGRAM,0);
+            int sockT = socket(AF_INET,SOCK_DGRAM,0);
 
-			setsockopt(sockT,SOL_SOCKET,SO_RCVTIMEO,(char*)&timer,sizeof(struct timeval));
+            setsockopt(sockT,SOL_SOCKET,SO_RCVTIMEO,(char*)&timer,sizeof(struct timeval));
 
-			if(sockT < 0){
-				cout<<"socket cre error";
-				perror("error");
-				exit(-1);
-			}
+            if(sockT < 0){
+                cout<<"socket cre error";
+                perror("error");
+                exit(-1);
+            }
 
-			/* send the node's id to the other node */
-			char nodeIdChar[40];
-			strcpy(nodeIdChar,to_string(nodeId).c_str());
-			sendto(sockT, nodeIdChar, strlen(nodeIdChar), 0, (struct sockaddr*) &serverToConnectTo, len);
+            /* send the node's id to the other node */
+            char nodeIdChar[40];
+            strcpy(nodeIdChar,to_string(nodeId).c_str());
+            sendto(sockT, nodeIdChar, strlen(nodeIdChar), 0, (struct sockaddr*) &serverToConnectTo, len);
 
-			/* receive ip and port of node's successor as ip:port*/
-			char ipAndPort[40];
+            /* receive ip and port of node's successor as ip:port*/
+            char ipAndPort[40];
 
-			int l = recvfrom(sockT, ipAndPort, 1024, 0, (struct sockaddr *) &serverToConnectTo, &len);
+            int l = recvfrom(sockT, ipAndPort, 1024, 0, (struct sockaddr *) &serverToConnectTo, &len);
 
-			close(sockT);
+            close(sockT);
 
-			if(l < 0){
-				pair < pair<string,int> , lli > node;
-				node.first.first = "";
-				node.second = -1;
-				node.first.second = -1;
-				return node;
-			}
+            if(l < 0){
+                pair < pair<string,int> , lli > node;
+                node.first.first = "";
+                node.second = -1;
+                node.first.second = -1;
+                return node;
+            }
 
-			ipAndPort[l] = '\0';
+            ipAndPort[l] = '\0';
 
-			/* set ip,port and hash for this node and return it */
-			string key = ipAndPort;
-    		lli hash = help.getHash(ipAndPort);
-    		pair<string,int> ipAndPortPair = help.getIpAndPort(key);
-    		node.first.first = ipAndPortPair.first;
-    		node.first.second = ipAndPortPair.second;
-    		node.second = hash;
+            /* set ip,port and hash for this node and return it */
+            string key = ipAndPort;
+            lli hash = help.getHash(ipAndPort);
+            pair<string,int> ipAndPortPair = help.getIpAndPort(key);
+            node.first.first = ipAndPortPair.first;
+            node.first.second = ipAndPortPair.second;
+            node.second = hash;
 
-    		return node;
-		}
-	}
+            return node;
+        }
+    }
 }
 
 pair< pair<string,int> , lli > NodeInformation::closestPrecedingNode(lli nodeId){

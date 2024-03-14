@@ -1,5 +1,5 @@
-all: main.o nodeInformation.o helperClass.o port.o functions.o 
-	g++ main.o functions.o port.o nodeInformation.o helperClass.o -o prog -lcrypto -lpthread
+all: main.o nodeInformation.o helperClass.o port.o functions.o httpServer.o
+	g++ main.o functions.o port.o nodeInformation.o helperClass.o httpServer.o -o prog -lcrypto -lpthread
 	
 main.o: main.cpp
 	g++ -std=c++11 -c main.cpp
@@ -16,5 +16,8 @@ nodeInformation.o: nodeInformation.cpp
 helperClass.o: helperClass.cpp
 	g++ -std=c++11 -c helperClass.cpp			
 
+httpServer.o: httpServer.cpp
+	g++ -std=c++11 -c httpServer.cpp
+
 clean:
-	rm -f ./prog ./main.o ./init.o ./port.o ./functions.o ./nodeInformation.o ./helperClass.o
+	rm -f ./prog ./main.o ./port.o ./functions.o ./nodeInformation.o ./helperClass.o httpServer.o

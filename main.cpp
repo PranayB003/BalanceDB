@@ -1,10 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <string>
 #include <cstdlib>
 #include <cstring>
 #include <thread>
 
+#include "httpServer.h"
 #include "port.h"
 #include "functions.h"
 #include "helperClass.h"
@@ -54,13 +56,14 @@ std::vector<std::string> splitString(std::string& str, char delimiter) {
 void initialize(std::map<std::string, std::string> &args){
     NodeInformation nodeInfo = NodeInformation();
 
-    /* open a socket to listen to other nodes */
+    // open a socket to listen to other nodes
     int given_port = 0;
     if (args.find("port") != args.end()) {
         given_port = std::stoi(args["port"]);
     }
     nodeInfo.sp.specifyPortServer(given_port);
 
+    // join or create a chord ring based on CLI args
     if (args.find("mode") != args.end()) {
         std::vector<std::string> mode_params = splitString(args["mode"], ',');
         if (mode_params.size() == 1 && mode_params[0] == "create") {
@@ -75,9 +78,33 @@ void initialize(std::map<std::string, std::string> &args){
         }
     }
 
+    // start an HTTP server to listen for incoming GET and PUT requests
+    if (args.find("http") != args.end() && args["http"] == "yes") {
+        auto callback = [&nodeInfo](string method, string data) {
+            std::string response;
+            if(nodeInfo.getStatus() == false){
+                response = "This node is not in the ring\n";
+            } else if (method == "PUT") {
+                auto delim_pos  = data.find("=");
+                std::string key = data.substr(0, delim_pos);
+                std::string val = data.substr(delim_pos + 1);
+                response = putForHttp(key, val, nodeInfo);
+            } else if (method == "GET") {
+                response = getForHttp(data, nodeInfo);
+            } else {
+                response = "Invalid Request. Try `GET key` or `PUT key=val` instead.";
+            }
+            return response;
+        };
+
+        thread serv(start_http_server, 8080, callback);
+        serv.detach();
+    }
+
     cout<<"Now listening at port number "<<nodeInfo.sp.getPortNumber()<<endl;
     cout<<"Type help to know more\n";
-
+    
+    // accept shell commands
     string command;
     while(1){
         cout<<"> ";
