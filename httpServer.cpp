@@ -1,5 +1,26 @@
 #include "httpServer.h"
 
+int extractContentLength(const std::string& httpRequest) {
+    // Find the position of the Content-Length header
+    size_t pos = httpRequest.find("Content-Length:");
+    if (pos != std::string::npos) {
+        // Find the end of the line after the header
+        size_t endLine = httpRequest.find("\r\n", pos);
+        if (endLine != std::string::npos) {
+            // Extract the value of Content-Length header
+            std::string contentLength = httpRequest.substr(pos + 15, endLine - (pos + 15));
+            // Trim leading and trailing whitespaces
+            size_t firstNonSpace = contentLength.find_first_not_of(" \t");
+            size_t lastNonSpace = contentLength.find_last_not_of(" \t");
+            if (firstNonSpace != std::string::npos && lastNonSpace != std::string::npos) {
+                contentLength = contentLength.substr(firstNonSpace, lastNonSpace - firstNonSpace + 1);
+            }
+            return std::stoi(contentLength);
+        }
+    }
+    return 0;
+}
+
 void handle_request(int client_socket, const std::function<std::string(std::string, std::string)> &callback) {
     // Read the HTTP request from the client
     char buffer[1024] = {0};
@@ -9,12 +30,27 @@ void handle_request(int client_socket, const std::function<std::string(std::stri
     std::string request(buffer), response;
     size_t start = request.find("\r\n\r\n") + 4;
     std::string data = request.substr(start);
+    //std::cout << "Initial data length: " << data.size() << ", is npos: " << (start == std::string::npos) << '\n';
+    
+    int payloadLen = extractContentLength(request);
+    while (data.size() < payloadLen) {
+        int bytes = read(client_socket, buffer, payloadLen - data.size());
+        request.append(buffer, bytes);
+        data = request.substr(start);
+    }
+    
+    //std::cout << "Request: " << request << std::endl;
+
     if (request.find("PUT") != std::string::npos) {
         // Handle PUT request
         response = callback("PUT", data);
-    } else if (request.find("GET") != std::string::npos) {
-        // Handle GET request
+    } else if (request.find("GET") != std::string::npos || 
+               request.find("POST") != std::string::npos) {
+        // Handle GET/POST request
         response = callback("GET", data);
+    } else if (request.find("DELETE") != std::string::npos) {
+        // Handle DELETE request
+        response = callback("DELETE", data);
     }
     std::string http_response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(response.size()) + "\r\n\r\n" + response;
     send(client_socket, http_response.c_str(), http_response.size(), 0);

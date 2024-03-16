@@ -106,10 +106,10 @@ string HelperFunctions::getKeyFromNode(pair< pair<string,int> , lli > node,strin
         exit(-1);
     }
 
-    keyHash += "k";
+    string msg = "$OP_GET_KEY$" + keyHash;
 
     char keyHashChar[40];
-    strcpy(keyHashChar,keyHash.c_str());
+    strcpy(keyHashChar,msg.c_str());
 
     sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
 
@@ -123,6 +123,29 @@ string HelperFunctions::getKeyFromNode(pair< pair<string,int> , lli > node,strin
     close(sock);
 
     return val;
+}
+
+/* will contact a node and delete a particular key from that node */
+void HelperFunctions::delKeyFromNode(pair< pair<string,int> , lli > node,string keyHash){
+    string ip = node.first.first;
+    int port = node.first.second;
+
+    struct sockaddr_in serverToConnectTo;
+    socklen_t l = sizeof(serverToConnectTo);
+    setServerDetails(serverToConnectTo,ip,port);
+
+    int sock = socket(AF_INET,SOCK_DGRAM,0);
+    if(sock < 0){
+        perror("error");
+        exit(-1);
+    }
+
+    string msg = "$OP_DEL_KEY$" + keyHash;
+
+    char keyHashChar[40];
+    strcpy(keyHashChar,msg.c_str());
+    sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
+    close(sock);
 }
 
 /* set details of server to which you want to connect to */
@@ -149,10 +172,10 @@ void HelperFunctions::sendKeyToNode(pair< pair<string,int> , lli > node,lli keyH
         exit(-1);
     }
 
-    string keyAndVal = combineIpAndPort(to_string(keyHash),value);
+    string msg = "$OP_PUT_KEY$" + combineIpAndPort(to_string(keyHash),value);
 
     char keyAndValChar[100];
-    strcpy(keyAndValChar,keyAndVal.c_str());
+    strcpy(keyAndValChar,msg.c_str());
 
     sendto(sock,keyAndValChar,strlen(keyAndValChar),0,(struct sockaddr *)&serverToConnectTo,l);
 
@@ -177,9 +200,9 @@ void HelperFunctions::getKeysFromSuccessor(NodeInformation &nodeInfo,string ip,i
     string id = to_string(nodeInfo.getId());
 
 
-    string msg = "getKeys:" + id;
+    string msg = "$OP_GET_KEY_SHARE$" + id;
 
-    char msgChar[40];
+    char msgChar[60];
     strcpy(msgChar,msg.c_str());
 
     sendto(sock,msgChar,strlen(msgChar),0,(struct sockaddr *) &serverToConnectTo,l);
@@ -275,9 +298,10 @@ string HelperFunctions::combineIpAndPort(string ip,string port){
 
 /* node receives all keys from it's predecessor who is leaving the ring */
 void HelperFunctions::storeAllKeys(NodeInformation &nodeInfo,string keysAndValues){
-    int pos = keysAndValues.find("storeKeys");
+    string opcode = "$OP_STORE_KEYS$";
+    int pos = opcode.size();
 
-    vector< pair<lli,string> > res = seperateKeysAndValues(keysAndValues.substr(0,pos));
+    vector< pair<lli,string> > res = seperateKeysAndValues(keysAndValues.substr(pos));
 
     for(int i=0;i<res.size();i++){
         nodeInfo.storeKey(res[i].first,res[i].second);
@@ -286,16 +310,13 @@ void HelperFunctions::storeAllKeys(NodeInformation &nodeInfo,string keysAndValue
 
 /* send all keys to the newly joined node which belong to it now */
 void HelperFunctions::sendNeccessaryKeys(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,string nodeIdString){
+    cout << "entered sendNecessaryKeys()" << endl;
     socklen_t l = sizeof(client);
-
-    int pos = nodeIdString.find(':');
-
-    lli nodeId = stoll(nodeIdString.substr(pos+1));
+    lli nodeId = stoll(nodeIdString);
 
     vector< pair<lli , string> > keysAndValuesVector = nodeInfo.getKeysForPredecessor(nodeId);
 
     string keysAndValues = "";
-
     /* will arrange all keys and val in form of key1:val1;key2:val2; */
     for(int i=0;i<keysAndValuesVector.size();i++){
         keysAndValues += to_string(keysAndValuesVector[i].first) + ":" + keysAndValuesVector[i].second;
@@ -310,8 +331,8 @@ void HelperFunctions::sendNeccessaryKeys(NodeInformation &nodeInfo,int newSock,s
 
 /* */
 void HelperFunctions::sendValToNode(NodeInformation nodeInfo,int newSock,struct sockaddr_in client,string nodeIdString){
-    nodeIdString.pop_back();
-    lli key = stoll(nodeIdString);
+    string opcode = "$OP_GET_KEY$";
+    lli key = stoll(nodeIdString.substr(opcode.size()));
     string val = nodeInfo.getValue(key);
 
     socklen_t l = sizeof(client);
@@ -483,6 +504,7 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
     if (sendto(sock, ipAndPortChar, strlen(ipAndPortChar), 0, (struct sockaddr*) &serverToConnectTo, l) < 0){
         cout << "yaha 12 " << sock << '\n';
         cout << "Error Code: " << strerrorname_np(errno) << '\n';
+        if (forStabilize == true) cout << "This was called for Stabilize\n";
         perror("error");
         exit(-1);
     }
@@ -546,7 +568,7 @@ vector< pair<string,int> > HelperFunctions::getSuccessorListFromNode(string ip,i
 
     setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(char*)&timer,sizeof(struct timeval));
 
-    char msg[] = "sendSuccList";
+    char msg[] = "$OP_SEND_SUCC_LIST$";
 
     sendto(sock,msg,strlen(msg),0,(struct sockaddr *)&serverToConnectTo,l);
 
@@ -627,7 +649,7 @@ bool HelperFunctions::isNodeAlive(string ip,int port){
     /* set timer on this socket */
     setsockopt(sock,SOL_SOCKET,SO_RCVTIMEO,(char*)&timer,sizeof(struct timeval));
 
-    char msg[] = "alive";
+    char msg[] = "$OP_ALIVE$";
     sendto(sock,msg,strlen(msg),0,(struct sockaddr *)&serverToConnectTo,l);
 
     char response[5];

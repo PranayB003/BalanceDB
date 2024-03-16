@@ -51,6 +51,10 @@ void NodeInformation::storeKey(lli key,string val){
 	dictionary[key] = val;
 }
 
+void NodeInformation::delKey(lli key) {
+    dictionary.erase(key);
+}
+
 void NodeInformation::printKeys(){
 	map<lli,string>::iterator it;
 
@@ -81,42 +85,34 @@ void NodeInformation::updateSuccessorList(){
 
 /* send all keys of this node to it's successor after it leaves the ring */
 vector< pair<lli , string> > NodeInformation::getAllKeysForSuccessor(){
-	map<lli,string>::iterator it;
-	vector< pair<lli , string> > res;
+    vector< pair<lli , string> > res(dictionary.begin(), dictionary.end());
+    dictionary.clear();
 
-	for(it = dictionary.begin(); it != dictionary.end() ; it++){
-		res.push_back(make_pair(it->first , it->second));
-		dictionary.erase(it);
-	}
-
-	return res;
+    return res;
 }
 
 vector< pair<lli , string> > NodeInformation::getKeysForPredecessor(lli nodeId){
-	map<lli,string>::iterator it;
+    map<lli,string>::iterator it;
 
-	vector< pair<lli , string> > res;
-	for(it = dictionary.begin(); it != dictionary.end() ; it++){
-		lli keyId = it->first;
+    vector< pair<lli , string> > res;
+    for(it = dictionary.begin(); it != dictionary.end() ; it++) {
+        lli keyId = it->first;
+        /* if predecessor's id is more than current node's id */
+        if (id < nodeId) {
+            if (keyId > id && keyId <= nodeId) {
+                res.push_back(make_pair(keyId , it->second));
+            }
+        } else { /* if predecessor's id is less than current node's id */
+            if (keyId <= nodeId || keyId > id) {
+                res.push_back(make_pair(keyId , it->second));
+            }
+        }
+    }
+    for (auto item: res) {
+        dictionary.erase(item.first);
+    }
 
-		/* if predecessor's id is more than current node's id */
-		if(id < nodeId){
-			if(keyId > id && keyId <= nodeId){
-				res.push_back(make_pair(keyId , it->second));
-				dictionary.erase(it);
-			}
-		}
-
-		/* if predecessor's id is less than current node's id */
-		else{
-			if(keyId <= nodeId || keyId > id){
-				res.push_back(make_pair(keyId , it->second));
-				dictionary.erase(it);
-			}
-		}
-	}
-
-	return res;
+    return res;
 }
 
 pair< pair<string,int> , lli > NodeInformation::findSuccessor(lli nodeId){

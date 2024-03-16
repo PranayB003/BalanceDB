@@ -91,6 +91,8 @@ void initialize(std::map<std::string, std::string> &args){
                 response = putForHttp(key, val, nodeInfo);
             } else if (method == "GET") {
                 response = getForHttp(data, nodeInfo);
+            } else if (method == "DELETE") {
+                response = delForHttp(data, nodeInfo);
             } else {
                 response = "Invalid Request. Try `GET key` or `PUT key=val` instead.";
             }

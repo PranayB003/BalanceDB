@@ -39,6 +39,7 @@ class NodeInformation{
 
 		void printKeys();
 		void storeKey(lli key,string val);
+                void delKey(lli key);
 		vector< pair<lli , string> > getAllKeysForSuccessor();
 		vector< pair<lli , string> > getKeysForPredecessor(lli nodeId);
 

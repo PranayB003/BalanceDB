@@ -53,8 +53,8 @@ void get(string key,NodeInformation nodeInfo){
     }
 }
 
-/* slimmed down versions of get() and put() for use by the HTTP server */
-std::string putForHttp(string key,string value,NodeInformation &nodeInfo){
+/* slimmed down versions of get()/put()/delete() for use by the HTTP server */
+std::string putForHttp(string key, string value, NodeInformation &nodeInfo) {
     if(key == "" || value == ""){
         return "ERROR: key and value must be non-empty\n";
     } else {
@@ -64,7 +64,7 @@ std::string putForHttp(string key,string value,NodeInformation &nodeInfo){
         return "OK";
     }
 }
-std::string getForHttp(string key,NodeInformation nodeInfo){
+std::string getForHttp(string key, NodeInformation nodeInfo) {
     if(key == ""){
         return "ERROR: Key field must be non-empty";
     } else {
@@ -72,6 +72,16 @@ std::string getForHttp(string key,NodeInformation nodeInfo){
         pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
         string val = help.getKeyFromNode(node,to_string(keyHash));
         return val;
+    }
+}
+std::string delForHttp(string key, NodeInformation nodeInfo) {
+    if (key == "") {
+        return "ERROR: Key field must be non-empty";
+    } else {
+        lli keyHash = help.getHash(key);
+        pair< pair<string, int>, lli> node = nodeInfo.findSuccessor(keyHash);
+        help.delKeyFromNode(node, to_string(keyHash));
+        return "OK";
     }
 }
 
@@ -219,29 +229,21 @@ void leave(NodeInformation &nodeInfo){
         return;
 
     /* transfer all keys to successor before leaving the ring */
-
     vector< pair<lli , string> > keysAndValuesVector = nodeInfo.getAllKeysForSuccessor();
-
     if(keysAndValuesVector.size() == 0)
         return;
 
-    string keysAndValues = "";
-
+    string keysAndValues = "$OP_STORE_KEYS$";
     /* will arrange all keys and val in form of key1:val1;key2:val2; */
     for(int i=0;i<keysAndValuesVector.size();i++){
         keysAndValues += to_string(keysAndValuesVector[i].first) + ":" + keysAndValuesVector[i].second;
         keysAndValues += ";";
     }
 
-    keysAndValues += "storeKeys";
-
     struct sockaddr_in serverToConnectTo;
     socklen_t l = sizeof(serverToConnectTo);
-
     help.setServerDetails(serverToConnectTo,succ.first.first,succ.first.second);
-
     int sock = socket(AF_INET,SOCK_DGRAM,0);
-
     if(sock < 0){
         perror("error");
         exit(-1);
@@ -249,7 +251,6 @@ void leave(NodeInformation &nodeInfo){
 
     char keysAndValuesChar[2000];
     strcpy(keysAndValuesChar,keysAndValues.c_str());
-
     sendto(sock,keysAndValuesChar,strlen(keysAndValuesChar),0,(struct sockaddr *)&serverToConnectTo,l);
 
     close(sock);
@@ -260,33 +261,42 @@ void doTask(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,stri
 
 
     /* predecessor of this node has left the ring and has sent all it's keys to this node(it's successor) */
-    if(nodeIdString.find("storeKeys") != -1){
+    if(nodeIdString.find("$OP_STORE_KEYS$") == 0){
         help.storeAllKeys(nodeInfo,nodeIdString);
     }
 
     /* check if the sent msg is in form of key:val, if yes then store it in current node (for put ) */
-    else if(help.isKeyValue(nodeIdString)){
-        pair< lli , string > keyAndVal = help.getKeyAndVal(nodeIdString);
+    //else if(help.isKeyValue(nodeIdString)){
+    else if(nodeIdString.find("$OP_PUT_KEY$") == 0){
+        string opcode = "$OP_PUT_KEY$";
+        pair< lli , string > keyAndVal = help.getKeyAndVal(nodeIdString.substr(opcode.size()));
         nodeInfo.storeKey(keyAndVal.first , keyAndVal.second);
     }
 
-    else if(nodeIdString.find("alive") != -1){
+    else if(nodeIdString.find("$OP_ALIVE$") != -1){
         help.sendAcknowledgement(newSock,client);
     }
 
     /* contacting node wants successor list of this node */
-    else if(nodeIdString.find("sendSuccList") != -1){
+    else if(nodeIdString.find("$OP_SEND_SUCC_LIST$") != -1){
         help.sendSuccessorList(nodeInfo,newSock,client);
     }
 
     /* contacting node has just joined the ring and is asking for keys that belongs to it now */
-    else if(nodeIdString.find("getKeys") != -1){
-        help.sendNeccessaryKeys(nodeInfo,newSock,client,nodeIdString);
+    else if(nodeIdString.find("$OP_GET_KEY_SHARE$") == 0){
+        string opcode = "$OP_GET_KEY_SHARE$";
+        help.sendNeccessaryKeys(nodeInfo,newSock,client,nodeIdString.substr(opcode.size()));
     }
 
     /* contacting node has run get command so send value of key it requires */
-    else if(nodeIdString.find("k") != -1){
+    else if(nodeIdString.find("$OP_GET_KEY$") == 0){
         help.sendValToNode(nodeInfo,newSock,client,nodeIdString);
+    }
+
+    /* contacting node has run get command so send value of key it requires */
+    else if(nodeIdString.find("$OP_DEL_KEY$") == 0){
+        string opcode = "$OP_DEL_KEY$";
+        nodeInfo.delKey(stoll(nodeIdString.substr(opcode.size())));
     }
 
     /* contacting node wants the predecessor of this node */
