@@ -310,7 +310,6 @@ void HelperFunctions::storeAllKeys(NodeInformation &nodeInfo,string keysAndValue
 
 /* send all keys to the newly joined node which belong to it now */
 void HelperFunctions::sendNeccessaryKeys(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,string nodeIdString){
-    cout << "entered sendNecessaryKeys()" << endl;
     socklen_t l = sizeof(client);
     lli nodeId = stoll(nodeIdString);
 
@@ -438,6 +437,7 @@ lli HelperFunctions::getSuccessorId(string ip,int port){
     if (sendto(sock, msg, strlen(msg) , 0, (struct sockaddr*) &serverToConnectTo, l) == -1){
         cout << "yaha 11 " << sock <<'\n';
         cout << "Error Code: " << strerrorname_np(errno) << '\n';
+        cout << "Was trying to send to " << ip << ":" << port << '\n';
         perror("error");
         exit(-1);
     }
@@ -504,6 +504,7 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
     if (sendto(sock, ipAndPortChar, strlen(ipAndPortChar), 0, (struct sockaddr*) &serverToConnectTo, l) < 0){
         cout << "yaha 12 " << sock << '\n';
         cout << "Error Code: " << strerrorname_np(errno) << '\n';
+        cout << "Was trying to send to " << ip << ":" << port << '\n';
         if (forStabilize == true) cout << "This was called for Stabilize\n";
         perror("error");
         exit(-1);

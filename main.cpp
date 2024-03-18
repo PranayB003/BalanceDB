@@ -154,6 +154,12 @@ void initialize(std::map<std::string, std::string> &args){
                 else
                     nodeInfo.printKeys();
             }
+            else if (arg == "clear"){
+                nodeInfo.clearKeys();
+            }
+            else if (arg == "numkeys"){
+                cout << "Number of keys on this node: " << nodeInfo.getNumKeys() << '\n';
+            }
             else if(arg == "help"){
                 showHelp();
             }

@@ -356,7 +356,7 @@ void doStabilize(NodeInformation &nodeInfo){
 
         nodeInfo.fixFingers();
 
-        this_thread::sleep_for(chrono::milliseconds(300));
+        this_thread::sleep_for(chrono::milliseconds(10000));
     }
 }
 
@@ -383,12 +383,14 @@ void callNotify(NodeInformation &nodeInfo,string ipAndPort){
 
 /* tell about all commands */
 void showHelp(){
-    cout<<"1) create : will create a DHT ring\n\n";
-    cout<<"2) join <ip> <port> : will join ring by connecting to main node having ip and port\n\n";
-    cout<<"3) printstate : will print successor, predecessor, fingerTable and Successor list\n\n";
-    cout<<"4) print : will print all keys and values present in that node\n\n";
-    cout<<"5) port : will display port number on which node is listening\n\n";
-    cout<<"6) port <number> : will change port number to mentioned number if that port is free\n\n";
-    cout<<"7) put <key> <value> : will put key and value to the node it belongs to\n\n";
-    cout<<"8) get <key> : will get value of mentioned key\n\n";
+    cout<<"1) create : will create a DHT ring\n";
+    cout<<"2) join <ip> <port> : will join ring by connecting to main node having ip and port\n";
+    cout<<"3) printstate : will print successor, predecessor, fingerTable and Successor list\n";
+    cout<<"4) print : will print all keys and values present in that node\n";
+    cout<<"5) port : will display port number on which node is listening\n";
+    cout<<"6) port <number> : will change port number to mentioned number if that port is free\n";
+    cout<<"7) put <key> <value> : will put key and value to the node it belongs to\n";
+    cout<<"8) get <key> : will get value of mentioned key\n";
+    cout<<"9) getnumkeys : will get the number of keys stored on this node\n";
+    cout<<"10) clear : will remove all the keys stored on this node\n";
 }

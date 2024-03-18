@@ -38,6 +38,7 @@ class NodeInformation{
 		void updateSuccessorList();
 
 		void printKeys();
+		void clearKeys();
 		void storeKey(lli key,string val);
                 void delKey(lli key);
 		vector< pair<lli , string> > getAllKeysForSuccessor();
@@ -51,6 +52,7 @@ class NodeInformation{
 		void setStatus();
 		
 		lli getId();
+		int getNumKeys();
 		string getValue(lli key);
 		vector< pair< pair<string,int> , lli > > getFingerTable();
 		pair< pair<string,int> , lli > getSuccessor();

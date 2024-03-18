@@ -47,6 +47,10 @@ void NodeInformation::setFingerTable(string ip,int port,lli hash){
 	}
 }
 
+void NodeInformation::clearKeys(){
+    dictionary.clear();
+}
+
 void NodeInformation::storeKey(lli key,string val){
 	dictionary[key] = val;
 }
@@ -384,6 +388,10 @@ pair< pair<string,int> , lli > NodeInformation::getSuccessor(){
 
 pair< pair<string,int> , lli > NodeInformation::getPredecessor(){
 	return predecessor;
+}
+
+int NodeInformation::getNumKeys(){
+    return dictionary.size();
 }
 
 string NodeInformation::getValue(lli key){
