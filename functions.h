@@ -11,11 +11,9 @@ using namespace std;
 
 typedef long long int lli;
 
-void put(string key,string value,NodeInformation &nodeInfo);
-void get(string key,NodeInformation nodeInfo);
-std::string putForHttp(string key,string value,NodeInformation &nodeInfo);
-std::string getForHttp(string key,NodeInformation nodeInfo);
-std::string delForHttp(string key, NodeInformation nodeInfo);
+std::string putWrapper(string key,string value,NodeInformation &nodeInfo);
+std::string getWrapper(string key,NodeInformation nodeInfo);
+std::string delWrapper(string key, NodeInformation nodeInfo);
 void create(NodeInformation &nodeInfo);
 void join(NodeInformation &nodeInfo,string ip,string port);
 void printState(NodeInformation nodeInfo);

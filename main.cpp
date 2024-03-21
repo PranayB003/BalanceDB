@@ -88,11 +88,11 @@ void initialize(std::map<std::string, std::string> &args){
                 auto delim_pos  = data.find("=");
                 std::string key = data.substr(0, delim_pos);
                 std::string val = data.substr(delim_pos + 1);
-                response = putForHttp(key, val, nodeInfo);
+                response = putWrapper(key, val, nodeInfo);
             } else if (method == "GET") {
-                response = getForHttp(data, nodeInfo);
+                response = getWrapper(data, nodeInfo);
             } else if (method == "DELETE") {
-                response = delForHttp(data, nodeInfo);
+                response = delWrapper(data, nodeInfo);
             } else {
                 response = "Invalid Request. Try `GET key` or `PUT key=val` instead.";
             }
@@ -182,7 +182,14 @@ void initialize(std::map<std::string, std::string> &args){
                     cout<<"Sorry this node is not in the ring\n";
                 }
                 else
-                    get(arguments[1],nodeInfo);
+                    cout << getWrapper(arguments[1],nodeInfo) << "\n";
+            }
+            else if (arg == "delete") {
+                if(nodeInfo.getStatus() == false){
+                    cout<<"Sorry this node is not in the ring\n";
+                }
+                else
+                    cout << delWrapper(arguments[1],nodeInfo) << "\n";
             }
             else{
                 cout<<"Invalid Command\n";
@@ -202,7 +209,7 @@ void initialize(std::map<std::string, std::string> &args){
                     cout<<"Sorry this node is not in the ring\n";
                 }
                 else
-                    put(arguments[1],arguments[2],nodeInfo);
+                    cout << putWrapper(arguments[1],arguments[2],nodeInfo) << "\n";
             }
             else{
                 cout<<"Invalid Command\n";

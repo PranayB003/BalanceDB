@@ -2,6 +2,7 @@
 #include "M.h"
 #include "functions.h"
 #include "helperClass.h"
+#include "reModule.h"
 
 typedef long long int lli;
 
@@ -9,78 +10,27 @@ using namespace std;
 
 HelperFunctions help = HelperFunctions();
 
-
-/* put the entered key to the proper node */
-void put(string key,string value,NodeInformation &nodeInfo){
-	if(key == "" || value == ""){
-		cout<<"Key or value field empty\n";
-		return;
-	}
-
-	else{
-
-        lli keyHash = help.getHash(key);
-		cout<<"Key is "<<key<<" and hash : "<<keyHash<<endl;
-
-        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
-
-        help.sendKeyToNode(node,keyHash,value);
-
-        cout<<"key entered successfully\n";
-	}
-}
-
-/* get key from the desired node */
-void get(string key,NodeInformation nodeInfo){
-
-    if(key == ""){
-        cout<<"Key field empty\n";
-        return ;
-    }
-    else{
-        
-        lli keyHash = help.getHash(key);
-
-        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
-
-        string val = help.getKeyFromNode(node,to_string(keyHash));
-
-        if(val == "")
-            cout<<"Key Not found\n";
-
-        else
-            cout<<"Found "<<key<<" : "<<val<<endl;
-    }
-}
-
 /* slimmed down versions of get()/put()/delete() for use by the HTTP server */
-std::string putForHttp(string key, string value, NodeInformation &nodeInfo) {
+std::string putWrapper(string key, string value, NodeInformation &nodeInfo) {
     if(key == "" || value == ""){
         return "ERROR: key and value must be non-empty\n";
     } else {
-        lli keyHash = help.getHash(key);
-        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
-        help.sendKeyToNode(node,keyHash,value);
+        reMod::put(key, value, nodeInfo);
         return "OK";
     }
 }
-std::string getForHttp(string key, NodeInformation nodeInfo) {
+std::string getWrapper(string key, NodeInformation nodeInfo) {
     if(key == ""){
         return "ERROR: Key field must be non-empty";
     } else {
-        lli keyHash = help.getHash(key);
-        pair< pair<string,int> , lli > node = nodeInfo.findSuccessor(keyHash);
-        string val = help.getKeyFromNode(node,to_string(keyHash));
-        return val;
+        return reMod::get(key, nodeInfo);
     }
 }
-std::string delForHttp(string key, NodeInformation nodeInfo) {
+std::string delWrapper(string key, NodeInformation nodeInfo) {
     if (key == "") {
         return "ERROR: Key field must be non-empty";
     } else {
-        lli keyHash = help.getHash(key);
-        pair< pair<string, int>, lli> node = nodeInfo.findSuccessor(keyHash);
-        help.delKeyFromNode(node, to_string(keyHash));
+        reMod::del(key, nodeInfo);
         return "OK";
     }
 }
@@ -291,6 +241,11 @@ void doTask(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,stri
     /* contacting node has run get command so send value of key it requires */
     else if(nodeIdString.find("$OP_GET_KEY$") == 0){
         help.sendValToNode(nodeInfo,newSock,client,nodeIdString);
+    }
+
+    /* contacting node has run getNumKeys command so send number of keys on this node */
+    else if(nodeIdString.find("$OP_GET_NUM_KEYS$") == 0){
+        help.sendNumKeysToNode(nodeInfo,newSock,client);
     }
 
     /* contacting node has run get command so send value of key it requires */
