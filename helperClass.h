@@ -30,8 +30,10 @@ class HelperFunctions{
         void sendNeccessaryKeys(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,string nodeIdString);
         void sendKeyToNode(pair< pair<string,int> , lli > node,lli keyHash,string value);
         void sendValToNode(NodeInformation nodeInfo,int newSock,struct sockaddr_in client,string nodeIdString);
+        void sendNumKeysToNode(NodeInformation nodeInfo,int newSock,struct sockaddr_in client);
         string getKeyFromNode(pair< pair<string,int> , lli > node,string keyHash);
         void delKeyFromNode(pair< pair<string,int> , lli > node,string keyHash);
+        int getNumKeysFromNode(pair< pair<string,int> , lli > node);
         pair<lli,string> getKeyAndVal(string keyAndVal);
         void getKeysFromSuccessor(NodeInformation &nodeInfo,string ip,int port);
         void storeAllKeys(NodeInformation &nodeInfo,string keysAndValues);

@@ -148,6 +148,33 @@ void HelperFunctions::delKeyFromNode(pair< pair<string,int> , lli > node,string 
     close(sock);
 }
 
+int HelperFunctions::getNumKeysFromNode(pair< pair<string,int> , lli > node){
+    string ip = node.first.first;
+    int port = node.first.second;
+    struct sockaddr_in serverToConnectTo;
+    socklen_t l = sizeof(serverToConnectTo);
+    setServerDetails(serverToConnectTo,ip,port);
+
+    int sock = socket(AF_INET,SOCK_DGRAM,0);
+    if(sock < 0){
+        perror("error");
+        exit(-1);
+    }
+
+    string msg = "$OP_GET_NUM_KEYS$";
+    char keyHashChar[40];
+    strcpy(keyHashChar,msg.c_str());
+    sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
+
+    char valChar[10];
+    int len = recvfrom(sock,valChar,10,0,(struct sockaddr *)&serverToConnectTo,&l);
+    valChar[len] = '\0';
+    close(sock);
+
+    int res = stoi(valChar);
+    return res;
+}
+
 /* set details of server to which you want to connect to */
 void HelperFunctions::setServerDetails(struct sockaddr_in &server,string ip,int port){
     server.sin_family = AF_INET;
@@ -338,6 +365,16 @@ void HelperFunctions::sendValToNode(NodeInformation nodeInfo,int newSock,struct 
 
     char valChar[100];
     strcpy(valChar,val.c_str());
+
+    sendto(newSock,valChar,strlen(valChar),0,(struct sockaddr *)&client,l);
+}
+
+void HelperFunctions::sendNumKeysToNode(NodeInformation nodeInfo,int newSock,struct sockaddr_in client){
+    string numKeys = to_string(nodeInfo.getNumKeys());
+    socklen_t l = sizeof(client);
+
+    char valChar[100];
+    strcpy(valChar,numKeys.c_str());
 
     sendto(newSock,valChar,strlen(valChar),0,(struct sockaddr *)&client,l);
 }
