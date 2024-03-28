@@ -11,6 +11,7 @@
 #include "functions.h"
 #include "helperClass.h"
 #include "nodeInformation.h"
+#include "reModule.h"
 
 using namespace std;
 
@@ -67,6 +68,9 @@ void initialize(std::map<std::string, std::string> &args){
     if (args.find("mode") != args.end()) {
         std::vector<std::string> mode_params = splitString(args["mode"], ',');
         if (mode_params.size() == 1 && mode_params[0] == "create") {
+            if (args.find("choices") != args.end()) {
+                reMod::setNumChoices(stoi(args["choices"]));
+            }
             thread first(create,ref(nodeInfo));
             first.detach();
         }
@@ -79,7 +83,7 @@ void initialize(std::map<std::string, std::string> &args){
     }
 
     // start an HTTP server to listen for incoming GET and PUT requests
-    if (args.find("http") != args.end() && args["http"] == "yes") {
+    if (args.find("http") != args.end()) {
         auto callback = [&nodeInfo](string method, string data) {
             std::string response;
             if(nodeInfo.getStatus() == false){
@@ -99,7 +103,7 @@ void initialize(std::map<std::string, std::string> &args){
             return response;
         };
 
-        thread serv(start_http_server, 8080, callback);
+        thread serv(start_http_server, stoi(args["http"]), callback);
         serv.detach();
     }
 
@@ -109,7 +113,7 @@ void initialize(std::map<std::string, std::string> &args){
     // accept shell commands
     string command;
     while(1){
-        cout<<"> ";
+        cout << "> ";
         getline(cin,command);
 
         /* find space in command and seperate arguments*/
@@ -124,6 +128,9 @@ void initialize(std::map<std::string, std::string> &args){
                     cout<<"Sorry but this node is already on the ring\n";
                 }
                 else{
+                    if (args.find("choices") != args.end()) {
+                        reMod::setNumChoices(stoi(args["choices"]));
+                    }
                     thread first(create,ref(nodeInfo));
                     first.detach();
                 }

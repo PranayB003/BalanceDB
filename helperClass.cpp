@@ -1,6 +1,7 @@
 #include "headers.h"
 
 #include "helperClass.h"
+#include "reModule.h"
 
 mutex mt;
 
@@ -395,7 +396,7 @@ void HelperFunctions::sendSuccessorId(NodeInformation nodeInfo,int newSock,struc
 }
 
 /* find successor of contacting node and send it's ip:port to it */
-void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString,int newSock,struct sockaddr_in client){
+void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString,int newSock,struct sockaddr_in client,bool isJoinMsg){
     
     lli nodeId = stoll(nodeIdString);
 
@@ -405,14 +406,25 @@ void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString
     pair< pair<string,int> , lli > succNode;
     succNode = nodeInfo.findSuccessor(nodeId);
 
-    /* get Ip and port of successor as ip:port in char array to send */
-    char ipAndPort[40];
+    string choices = to_string(reMod::getNumChoices()) + "$";
     string succIp = succNode.first.first;
     string succPort = to_string(succNode.first.second);
-    strcpy(ipAndPort,combineIpAndPort(succIp,succPort).c_str());
+    string successorAddr = combineIpAndPort(succIp, succPort);
+    string reply = "";
+    /* If join message, also send numChoices. Reply format is 'numChoices$IP:PORT' */
+    if (isJoinMsg) {
+        //cout << "Got a joining message from another node!\n";
+        reply += choices;
+    }
+    reply += successorAddr;
+    //cout << "reply of sendSuccessor(): " << reply << "\n"; 
+
+    /* get Ip and port of successor as ip:port in char array to send */
+    char buffer[40];
+    strcpy(buffer, reply.c_str());
 
     /* send ip and port info to the respective node */
-    sendto(newSock, ipAndPort, strlen(ipAndPort), 0, (struct sockaddr*) &client, l);
+    sendto(newSock, buffer, strlen(buffer), 0, (struct sockaddr*) &client, l);
 
 }
 

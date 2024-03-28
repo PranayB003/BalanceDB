@@ -42,7 +42,7 @@ class HelperFunctions{
         lli getSuccessorId(string ip,int port);
 
         void sendPredecessor(NodeInformation nodeInfo,int newSock,struct sockaddr_in client);
-        void sendSuccessor(NodeInformation nodeInfo,string nodeIdString,int newSock,struct sockaddr_in client);
+        void sendSuccessor(NodeInformation nodeInfo,string nodeIdString,int newSock,struct sockaddr_in client,bool isJoinMsg);
         void sendSuccessorId(NodeInformation nodeInfo,int newSock,struct sockaddr_in client);
         void sendAcknowledgement(int newSock,struct sockaddr_in client);
 

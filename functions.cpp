@@ -91,9 +91,9 @@ void join(NodeInformation &nodeInfo,string ip,string port){
 
     /* generate id of current node */
     lli nodeId = help.getHash(currIp+":"+currPort);    
-
+    string msg = "$JOIN$" + to_string(nodeId);
     char charNodeId[41];
-    strcpy(charNodeId,to_string(nodeId).c_str());
+    strcpy(charNodeId,msg.c_str());
 
 
     /* node sends it's id to main node to find it's successor */
@@ -105,21 +105,24 @@ void join(NodeInformation &nodeInfo,string ip,string port){
     }
 
     /* node receives id and port of it's successor */
-    char ipAndPort[40];
+    char buffer[40];
     int len;
-    if ((len = recvfrom(sock, ipAndPort, 1024, 0, (struct sockaddr *) &server, &l)) == -1){
+    if ((len = recvfrom(sock, buffer, 40, 0, (struct sockaddr *) &server, &l)) == -1){
         cout << "yaha 2\n";
         cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
         exit(-1);
     }
-    ipAndPort[len] = '\0';
+    buffer[len] = '\0';
 
     close(sock);
 
     cout<<"Successfully joined the ring\n";
 
-    string key = ipAndPort;
+    string data = buffer;
+    int delim = data.find("$");
+    reMod::setNumChoices(stoi(data.substr(0, delim)));
+    string key = data.substr(delim + 1);
     lli hash = help.getHash(key);
     pair<string,int> ipAndPortPair = help.getIpAndPort(key);
 
@@ -223,12 +226,12 @@ void doTask(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,stri
         nodeInfo.storeKey(keyAndVal.first , keyAndVal.second);
     }
 
-    else if(nodeIdString.find("$OP_ALIVE$") != -1){
+    else if(nodeIdString.find("$OP_ALIVE$") == 0){
         help.sendAcknowledgement(newSock,client);
     }
 
     /* contacting node wants successor list of this node */
-    else if(nodeIdString.find("$OP_SEND_SUCC_LIST$") != -1){
+    else if(nodeIdString.find("$OP_SEND_SUCC_LIST$") == 0){
         help.sendSuccessorList(nodeInfo,newSock,client);
     }
 
@@ -271,7 +274,14 @@ void doTask(NodeInformation &nodeInfo,int newSock,struct sockaddr_in client,stri
 
     /* contacting node wants current node to find successor for it */
     else{
-        help.sendSuccessor(nodeInfo,nodeIdString,newSock,client);
+        string msg = nodeIdString;
+        bool isJoinMsg = false;
+        if (nodeIdString.find("$JOIN$") == 0) {
+            string opcode = "$JOIN$";
+            msg = nodeIdString.substr(opcode.size());
+            isJoinMsg = true;
+        }
+        help.sendSuccessor(nodeInfo,msg,newSock,client,isJoinMsg);
     }
 
 }
@@ -311,7 +321,7 @@ void doStabilize(NodeInformation &nodeInfo){
 
         nodeInfo.fixFingers();
 
-        this_thread::sleep_for(chrono::milliseconds(10000));
+        this_thread::sleep_for(chrono::milliseconds(30000));
     }
 }
 
