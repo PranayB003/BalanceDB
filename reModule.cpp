@@ -37,16 +37,13 @@ void put(string key, string value, NodeInformation &nodeInfo) {
     for (int i = 0; i < numChoices; i++) {
         keyHash[i] = hashN(key, i);
     }
-    cout << "put stage1 complete\n";
 
     vector<int> nodeCapacity(numChoices);
     vector<pair<pair<string, int>, lli>> node(numChoices);
     for (int i = 0; i < numChoices; i++) {
         node[i] = nodeInfo.findSuccessor(keyHash[i]);
         nodeCapacity[i] = help.getNumKeysFromNode(node[i]);
-        cout << "choice" << i << " loop done\n";
     }
-    cout << "put stage2 complete\n";
     int index = min_element(nodeCapacity.begin(), nodeCapacity.end()) - nodeCapacity.begin();
 
     help.sendKeyToNode(node[index], keyHash[index], value);

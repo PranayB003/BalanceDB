@@ -1,7 +1,7 @@
 #ifndef M_h
 #define M_h
 
-#define M 48
+#define M 16
 #define R 10
 
 #define A 304293578

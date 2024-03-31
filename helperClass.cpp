@@ -413,11 +413,9 @@ void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString
     string reply = "";
     /* If join message, also send numChoices. Reply format is 'numChoices$IP:PORT' */
     if (isJoinMsg) {
-        //cout << "Got a joining message from another node!\n";
         reply += choices;
     }
     reply += successorAddr;
-    //cout << "reply of sendSuccessor(): " << reply << "\n"; 
 
     /* get Ip and port of successor as ip:port in char array to send */
     char buffer[40];
