@@ -94,7 +94,11 @@ void initialize(std::map<std::string, std::string> &args){
                 std::string val = data.substr(delim_pos + 1);
                 response = putWrapper(key, val, nodeInfo);
             } else if (method == "GET") {
-                response = getWrapper(data, nodeInfo);
+                if (data == "__NUM_KEYS__") {
+                    response = to_string(nodeInfo.getNumKeys());
+                } else {
+                    response = getWrapper(data, nodeInfo);
+                }
             } else if (method == "DELETE") {
                 response = delWrapper(data, nodeInfo);
             } else {

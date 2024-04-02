@@ -1,26 +1,27 @@
-all: main.o nodeInformation.o helperClass.o port.o functions.o httpServer.o reModule.o
-	g++ -g main.o functions.o port.o nodeInformation.o helperClass.o httpServer.o reModule.o -o prog -lcrypto -lpthread
+CXXFLAGS = -std=c++11
+DEBUGFLAGS = -g
+LDFLAGS = -lcrypto -lpthread
 
-main.o: main.cpp
-	g++ -g -std=c++11 -c main.cpp
+SRCDIR = src
+BUILDDIR = build
 
-port.o: port.cpp
-	g++ -g -std=c++11 -c port.cpp
+SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
 
-functions.o: functions.cpp
-	g++ -g -std=c++11 -c functions.cpp
+all: $(BUILDDIR)/prog
 
-nodeInformation.o: nodeInformation.cpp
-	g++ -g -std=c++11 -c nodeInformation.cpp
+debug: CXXFLAGS += $(DEBUGFLAGS)
+debug: $(BUILDDIR)/prog
 
-helperClass.o: helperClass.cpp
-	g++ -g -std=c++11 -c helperClass.cpp			
+$(BUILDDIR)/prog: $(OBJECTS)
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@ $(LDFLAGS)
 
-httpServer.o: httpServer.cpp
-	g++ -g -std=c++11 -c httpServer.cpp
-
-reModule.o: reModule.cpp
-	g++ -g -std=c++11 -c reModule.cpp
+$(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
+	@mkdir -p $(@D)
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f ./prog ./main.o ./port.o ./functions.o ./nodeInformation.o ./helperClass.o httpServer.o reModule.o
+	rm -rf $(BUILDDIR)
+
+.PHONY: all debug clean
