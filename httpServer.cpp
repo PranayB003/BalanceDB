@@ -23,7 +23,7 @@ int extractContentLength(const std::string& httpRequest) {
 
 void handle_request(int client_socket, const std::function<std::string(std::string, std::string)> &callback) {
     // Read the HTTP request from the client
-    char buffer[1024] = {0};
+    char buffer[2000] = {0};
     read(client_socket, buffer, 1024);
 
     // Check if it's a PUT or GET request

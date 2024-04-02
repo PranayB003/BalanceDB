@@ -184,14 +184,14 @@ pair< pair<string,int> , lli > NodeInformation::findSuccessor(lli nodeId){
             }
 
             /* send the node's id to the other node */
-            char nodeIdChar[40];
+            char nodeIdChar[2000];
             strcpy(nodeIdChar,to_string(nodeId).c_str());
             sendto(sockT, nodeIdChar, strlen(nodeIdChar), 0, (struct sockaddr*) &serverToConnectTo, len);
 
             /* receive ip and port of node's successor as ip:port*/
-            char ipAndPort[40];
+            char ipAndPort[2000];
 
-            int l = recvfrom(sockT, ipAndPort, 1024, 0, (struct sockaddr *) &serverToConnectTo, &len);
+            int l = recvfrom(sockT, ipAndPort, 2000, 0, (struct sockaddr *) &serverToConnectTo, &len);
 
             close(sockT);
 

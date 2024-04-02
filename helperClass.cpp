@@ -20,8 +20,8 @@ vector<string> HelperFunctions::splitCommand(string command){
 
 /* get SHA1 hash for a given key */
 lli HelperFunctions::getHash(string key){
-    unsigned char obuf[41];
-    char finalHash[41];
+    unsigned char obuf[2000];
+    char finalHash[2000];
     string keyHash = "";
     int i;
     lli mod = pow(2,M);
@@ -109,13 +109,13 @@ string HelperFunctions::getKeyFromNode(pair< pair<string,int> , lli > node,strin
 
     string msg = "$OP_GET_KEY$" + keyHash;
 
-    char keyHashChar[40];
+    char keyHashChar[2000];
     strcpy(keyHashChar,msg.c_str());
 
     sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
 
-    char valChar[100];
-    int len = recvfrom(sock,valChar,1024,0,(struct sockaddr *)&serverToConnectTo,&l);
+    char valChar[2000];
+    int len = recvfrom(sock,valChar,2000,0,(struct sockaddr *)&serverToConnectTo,&l);
 
     valChar[len] = '\0';
 
@@ -143,7 +143,7 @@ void HelperFunctions::delKeyFromNode(pair< pair<string,int> , lli > node,string 
 
     string msg = "$OP_DEL_KEY$" + keyHash;
 
-    char keyHashChar[40];
+    char keyHashChar[2000];
     strcpy(keyHashChar,msg.c_str());
     sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
     close(sock);
@@ -163,12 +163,12 @@ int HelperFunctions::getNumKeysFromNode(pair< pair<string,int> , lli > node){
     }
 
     string msg = "$OP_GET_NUM_KEYS$";
-    char keyHashChar[40];
+    char keyHashChar[2000];
     strcpy(keyHashChar,msg.c_str());
     sendto(sock,keyHashChar,strlen(keyHashChar),0,(struct sockaddr *)&serverToConnectTo,l);
 
-    char valChar[10];
-    int len = recvfrom(sock,valChar,10,0,(struct sockaddr *)&serverToConnectTo,&l);
+    char valChar[2000];
+    int len = recvfrom(sock,valChar,2000,0,(struct sockaddr *)&serverToConnectTo,&l);
     valChar[len] = '\0';
     close(sock);
 
@@ -202,7 +202,7 @@ void HelperFunctions::sendKeyToNode(pair< pair<string,int> , lli > node,lli keyH
 
     string msg = "$OP_PUT_KEY$" + combineIpAndPort(to_string(keyHash),value);
 
-    char keyAndValChar[100];
+    char keyAndValChar[2000];
     strcpy(keyAndValChar,msg.c_str());
 
     sendto(sock,keyAndValChar,strlen(keyAndValChar),0,(struct sockaddr *)&serverToConnectTo,l);
@@ -230,7 +230,7 @@ void HelperFunctions::getKeysFromSuccessor(NodeInformation &nodeInfo,string ip,i
 
     string msg = "$OP_GET_KEY_SHARE$" + id;
 
-    char msgChar[60];
+    char msgChar[2000];
     strcpy(msgChar,msg.c_str());
 
     sendto(sock,msgChar,strlen(msgChar),0,(struct sockaddr *) &serverToConnectTo,l);
@@ -364,7 +364,7 @@ void HelperFunctions::sendValToNode(NodeInformation nodeInfo,int newSock,struct 
 
     socklen_t l = sizeof(client);
 
-    char valChar[100];
+    char valChar[2000];
     strcpy(valChar,val.c_str());
 
     sendto(newSock,valChar,strlen(valChar),0,(struct sockaddr *)&client,l);
@@ -374,7 +374,7 @@ void HelperFunctions::sendNumKeysToNode(NodeInformation nodeInfo,int newSock,str
     string numKeys = to_string(nodeInfo.getNumKeys());
     socklen_t l = sizeof(client);
 
-    char valChar[100];
+    char valChar[2000];
     strcpy(valChar,numKeys.c_str());
 
     sendto(newSock,valChar,strlen(valChar),0,(struct sockaddr *)&client,l);
@@ -385,7 +385,7 @@ void HelperFunctions::sendSuccessorId(NodeInformation nodeInfo,int newSock,struc
 
     pair< pair<string,int> , lli > succ = nodeInfo.getSuccessor();
     string succId = to_string(succ.second);
-    char succIdChar[40];
+    char succIdChar[2000];
 
     socklen_t l = sizeof(client);
 
@@ -418,7 +418,7 @@ void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString
     reply += successorAddr;
 
     /* get Ip and port of successor as ip:port in char array to send */
-    char buffer[40];
+    char buffer[2000];
     strcpy(buffer, reply.c_str());
 
     /* send ip and port info to the respective node */
@@ -444,7 +444,7 @@ void HelperFunctions::sendPredecessor(NodeInformation nodeInfo,int newSock,struc
     else{
         string ipAndPort = combineIpAndPort(ip,port);
 
-        char ipAndPortChar[40];
+        char ipAndPortChar[2000];
         strcpy(ipAndPortChar,ipAndPort.c_str());
 
         sendto(newSock, ipAndPortChar, strlen(ipAndPortChar), 0, (struct sockaddr*) &client, l);
@@ -489,9 +489,9 @@ lli HelperFunctions::getSuccessorId(string ip,int port){
         exit(-1);
     }
 
-    char succIdChar[40];
+    char succIdChar[2000];
 
-    int len = recvfrom(sock,succIdChar,1024,0,(struct sockaddr*) &serverToConnectTo, &l);
+    int len = recvfrom(sock,succIdChar,2000,0,(struct sockaddr*) &serverToConnectTo, &l);
 
     close(sock);
 
@@ -545,7 +545,7 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
         msg = "p2";
 
 
-    char ipAndPortChar[40];
+    char ipAndPortChar[2000];
     strcpy(ipAndPortChar,msg.c_str());
 
     if (sendto(sock, ipAndPortChar, strlen(ipAndPortChar), 0, (struct sockaddr*) &serverToConnectTo, l) < 0){
@@ -558,7 +558,7 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
     }
 
 
-    int len = recvfrom(sock, ipAndPortChar, 1024, 0, (struct sockaddr *) &serverToConnectTo, &l);
+    int len = recvfrom(sock, ipAndPortChar, 2000, 0, (struct sockaddr *) &serverToConnectTo, &l);
     close(sock);
 
     if(len < 0){
@@ -620,8 +620,8 @@ vector< pair<string,int> > HelperFunctions::getSuccessorListFromNode(string ip,i
 
     sendto(sock,msg,strlen(msg),0,(struct sockaddr *)&serverToConnectTo,l);
 
-    char succListChar[1000];
-    int len = recvfrom(sock,succListChar,1000,0,(struct sockaddr *)&serverToConnectTo,&l);
+    char succListChar[2000];
+    int len = recvfrom(sock,succListChar,2000,0,(struct sockaddr *)&serverToConnectTo,&l);
 
     close(sock);
 
@@ -649,7 +649,7 @@ void HelperFunctions::sendSuccessorList(NodeInformation &nodeInfo,int sock,struc
 
     string successorList = splitSuccessorList(list);
 
-    char successorListChar[1000];
+    char successorListChar[2000];
     strcpy(successorListChar,successorList.c_str());
 
     sendto(sock,successorListChar,strlen(successorListChar),0,(struct sockaddr *)&client,l);
@@ -700,7 +700,7 @@ bool HelperFunctions::isNodeAlive(string ip,int port){
     char msg[] = "$OP_ALIVE$";
     sendto(sock,msg,strlen(msg),0,(struct sockaddr *)&serverToConnectTo,l);
 
-    char response[5];
+    char response[2000];
     int len = recvfrom(sock,response,2,0,(struct sockaddr *)&serverToConnectTo,&l);
 
     close(sock);

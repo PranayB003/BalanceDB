@@ -92,7 +92,7 @@ void join(NodeInformation &nodeInfo,string ip,string port){
     /* generate id of current node */
     lli nodeId = help.getHash(currIp+":"+currPort);    
     string msg = "$JOIN$" + to_string(nodeId);
-    char charNodeId[41];
+    char charNodeId[2000];
     strcpy(charNodeId,msg.c_str());
 
 
@@ -105,9 +105,9 @@ void join(NodeInformation &nodeInfo,string ip,string port){
     }
 
     /* node receives id and port of it's successor */
-    char buffer[40];
+    char buffer[2000];
     int len;
-    if ((len = recvfrom(sock, buffer, 40, 0, (struct sockaddr *) &server, &l)) == -1){
+    if ((len = recvfrom(sock, buffer, 2000, 0, (struct sockaddr *) &server, &l)) == -1){
         cout << "yaha 2\n";
         cout << "Error Code: " << strerrorname_np(errno) << '\n';
         perror("error");
@@ -293,9 +293,9 @@ void listenTo(NodeInformation &nodeInfo){
 
     /* wait for any client to connect and create a new thread as soon as one connects */
     while(1){
-        char charNodeId[40];
+        char charNodeId[2000];
         int sock = nodeInfo.sp.getSocketFd();
-        int len = recvfrom(sock, charNodeId, 1024, 0, (struct sockaddr *) &client, &l);
+        int len = recvfrom(sock, charNodeId, 2000, 0, (struct sockaddr *) &client, &l);
         charNodeId[len] = '\0';
         string nodeIdString = charNodeId;
 
