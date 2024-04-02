@@ -26,7 +26,7 @@ lli HelperFunctions::getHash(string key){
     int i;
     lli mod = pow(2,M);
 
-    
+
     /* convert string to an unsigned char array because SHA1 takes unsigned char array as parameter */
     unsigned char unsigned_key[key.length()+1];
     for(i=0;i<key.length();i++){
@@ -397,11 +397,11 @@ void HelperFunctions::sendSuccessorId(NodeInformation nodeInfo,int newSock,struc
 
 /* find successor of contacting node and send it's ip:port to it */
 void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString,int newSock,struct sockaddr_in client,bool isJoinMsg){
-    
+
     lli nodeId = stoll(nodeIdString);
 
     socklen_t l = sizeof(client);
-    
+
     /* find successor of the joining node */
     pair< pair<string,int> , lli > succNode;
     succNode = nodeInfo.findSuccessor(nodeId);
@@ -428,9 +428,9 @@ void HelperFunctions::sendSuccessor(NodeInformation nodeInfo,string nodeIdString
 
 /* send ip:port of predecessor of current node to contacting node */
 void HelperFunctions::sendPredecessor(NodeInformation nodeInfo,int newSock,struct sockaddr_in client){
-    
+
     pair< pair<string,int> , lli > predecessor = nodeInfo.getPredecessor();
-    
+
     string ip = predecessor.first.first;
     string port = to_string(predecessor.first.second);
 
@@ -454,7 +454,7 @@ void HelperFunctions::sendPredecessor(NodeInformation nodeInfo,int newSock,struc
 
 /* get successor id of the node having ip address as ip and port num as port */
 lli HelperFunctions::getSuccessorId(string ip,int port){
-    
+
     struct sockaddr_in serverToConnectTo;
     socklen_t l = sizeof(serverToConnectTo);
 
@@ -571,7 +571,7 @@ pair< pair<string,int> , lli > HelperFunctions::getPredecessorNode(string ip,int
 
     ipAndPortChar[len] = '\0';
 
-    
+
 
     string ipAndPort = ipAndPortChar;
     lli hash;
@@ -606,7 +606,7 @@ vector< pair<string,int> > HelperFunctions::getSuccessorListFromNode(string ip,i
     /* set timer for socket */
     struct timeval timer;
     setTimer(timer);
-    
+
 
     int sock = socket(AF_INET,SOCK_DGRAM,0);
     if(sock < 0){

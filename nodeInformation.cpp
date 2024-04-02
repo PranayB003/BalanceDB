@@ -10,41 +10,41 @@ using namespace std;
 
 
 NodeInformation::NodeInformation(){
-	fingerTable = vector< pair< pair<string,int> , lli > >(M+1);
-	successorList = vector< pair< pair<string,int> , lli > >(R+1);
-	isInRing = false;
+    fingerTable = vector< pair< pair<string,int> , lli > >(M+1);
+    successorList = vector< pair< pair<string,int> , lli > >(R+1);
+    isInRing = false;
 }
 
 void NodeInformation::setStatus(){
-	isInRing = true;
+    isInRing = true;
 }
 
 void NodeInformation::setSuccessor(string ip,int port,lli hash){
-	successor.first.first = ip;
-	successor.first.second = port;
-	successor.second = hash;
+    successor.first.first = ip;
+    successor.first.second = port;
+    successor.second = hash;
 }
 
 void NodeInformation::setSuccessorList(string ip,int port,lli hash){
-	for(int i=1;i<=R;i++){
-		successorList[i] = make_pair(make_pair(ip,port),hash);
-	}
+    for(int i=1;i<=R;i++){
+        successorList[i] = make_pair(make_pair(ip,port),hash);
+    }
 }
 
 void NodeInformation::setPredecessor(string ip,int port,lli hash){
-	predecessor.first.first = ip;
-	predecessor.first.second = port;
-	predecessor.second = hash;	
+    predecessor.first.first = ip;
+    predecessor.first.second = port;
+    predecessor.second = hash;	
 }
 
 void NodeInformation::setId(lli nodeId){
-	id = nodeId;
+    id = nodeId;
 }
 
 void NodeInformation::setFingerTable(string ip,int port,lli hash){
-	for(int i=1;i<=M;i++){
-		fingerTable[i] = make_pair(make_pair(ip,port),hash);
-	}
+    for(int i=1;i<=M;i++){
+        fingerTable[i] = make_pair(make_pair(ip,port),hash);
+    }
 }
 
 void NodeInformation::clearKeys(){
@@ -52,7 +52,7 @@ void NodeInformation::clearKeys(){
 }
 
 void NodeInformation::storeKey(lli key,string val){
-	dictionary[key] = val;
+    dictionary[key] = val;
 }
 
 void NodeInformation::delKey(lli key) {
@@ -60,29 +60,29 @@ void NodeInformation::delKey(lli key) {
 }
 
 void NodeInformation::printKeys(){
-	map<lli,string>::iterator it;
+    map<lli,string>::iterator it;
 
-	for(it = dictionary.begin(); it != dictionary.end() ; it++){
-		cout<<it->first<<" "<<it->second<<endl;
-	}
+    for(it = dictionary.begin(); it != dictionary.end() ; it++){
+        cout<<it->first<<" "<<it->second<<endl;
+    }
 }
 
 void NodeInformation::updateSuccessorList(){
 
-	HelperFunctions help;
+    HelperFunctions help;
 
-	vector< pair<string,int> > list = help.getSuccessorListFromNode(successor.first.first,successor.first.second);
+    vector< pair<string,int> > list = help.getSuccessorListFromNode(successor.first.first,successor.first.second);
 
-	if(list.size() != R)
-		return;
+    if(list.size() != R)
+        return;
 
-	successorList[1] = successor;
+    successorList[1] = successor;
 
-	for(int i=2;i<=R;i++){
-		successorList[i].first.first = list[i-2].first;
-		successorList[i].first.second = list[i-2].second;
-		successorList[i].second = help.getHash(list[i-2].first + ":" + to_string(list[i-2].second));
-	}
+    for(int i=2;i<=R;i++){
+        successorList[i].first.first = list[i-2].first;
+        successorList[i].first.second = list[i-2].second;
+        successorList[i].second = help.getHash(list[i-2].first + ":" + to_string(list[i-2].second));
+    }
 
 }
 
@@ -219,175 +219,175 @@ pair< pair<string,int> , lli > NodeInformation::findSuccessor(lli nodeId){
 }
 
 pair< pair<string,int> , lli > NodeInformation::closestPrecedingNode(lli nodeId){
-	HelperFunctions help;
+    HelperFunctions help;
 
-	for(int i=M;i>=1;i--){
-		if(fingerTable[i].first.first == "" || fingerTable[i].first.second == -1 || fingerTable[i].second == -1){
-			continue;
-		}
+    for(int i=M;i>=1;i--){
+        if(fingerTable[i].first.first == "" || fingerTable[i].first.second == -1 || fingerTable[i].second == -1){
+            continue;
+        }
 
-		if(fingerTable[i].second > id && fingerTable[i].second < nodeId){
-			return fingerTable[i];
-		}
-		else{
+        if(fingerTable[i].second > id && fingerTable[i].second < nodeId){
+            return fingerTable[i];
+        }
+        else{
 
-			lli successorId = help.getSuccessorId(fingerTable[i].first.first,fingerTable[i].first.second);
+            lli successorId = help.getSuccessorId(fingerTable[i].first.first,fingerTable[i].first.second);
 
-			if(successorId == -1)
-				continue;
+            if(successorId == -1)
+                continue;
 
-			if(fingerTable[i].second > successorId){
-				if((nodeId <= fingerTable[i].second && nodeId <= successorId) || (nodeId >= fingerTable[i].second && nodeId >= successorId)){
-					return fingerTable[i];
-				}
-			}
-			else if(fingerTable[i].second < successorId && nodeId > fingerTable[i].second && nodeId < successorId){
-				return fingerTable[i];
-			}
-			
-			pair< pair<string,int> , lli > predNode = help.getPredecessorNode(fingerTable[i].first.first,fingerTable[i].first.second,"",-1,false);
-			lli predecessorId = predNode.second;
+            if(fingerTable[i].second > successorId){
+                if((nodeId <= fingerTable[i].second && nodeId <= successorId) || (nodeId >= fingerTable[i].second && nodeId >= successorId)){
+                    return fingerTable[i];
+                }
+            }
+            else if(fingerTable[i].second < successorId && nodeId > fingerTable[i].second && nodeId < successorId){
+                return fingerTable[i];
+            }
 
-			if(predecessorId != -1 && fingerTable[i].second < predecessorId){
-				if((nodeId <= fingerTable[i].second && nodeId <= predecessorId) || (nodeId >= fingerTable[i].second && nodeId >= predecessorId)){
-					return predNode;
-				}		
-			}
-			if(predecessorId != -1 && fingerTable[i].second > predecessorId && nodeId >= predecessorId && nodeId <= fingerTable[i].second){
-				return predNode;
-			}
-		}
-	}
+            pair< pair<string,int> , lli > predNode = help.getPredecessorNode(fingerTable[i].first.first,fingerTable[i].first.second,"",-1,false);
+            lli predecessorId = predNode.second;
 
-	/* */
-	pair< pair<string,int> , lli > node;
-	node.first.first = "";
-	node.first.second = -1;
-	node.second = -1;
-	return node;
+            if(predecessorId != -1 && fingerTable[i].second < predecessorId){
+                if((nodeId <= fingerTable[i].second && nodeId <= predecessorId) || (nodeId >= fingerTable[i].second && nodeId >= predecessorId)){
+                    return predNode;
+                }		
+            }
+            if(predecessorId != -1 && fingerTable[i].second > predecessorId && nodeId >= predecessorId && nodeId <= fingerTable[i].second){
+                return predNode;
+            }
+        }
+    }
+
+    /* */
+    pair< pair<string,int> , lli > node;
+    node.first.first = "";
+    node.first.second = -1;
+    node.second = -1;
+    return node;
 }
 
 void NodeInformation::stabilize(){
 
-	/* get predecessor of successor */
+    /* get predecessor of successor */
 
-	HelperFunctions help;
+    HelperFunctions help;
 
-	string ownIp = sp.getIpAddress();
-	int ownPort = sp.getPortNumber();
+    string ownIp = sp.getIpAddress();
+    int ownPort = sp.getPortNumber();
 
-	if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
-		return;
+    if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
+        return;
 
-	/* get predecessor of successor */
-	pair< pair<string,int> , lli > predNode = help.getPredecessorNode(successor.first.first,successor.first.second,ownIp,ownPort,true);
+    /* get predecessor of successor */
+    pair< pair<string,int> , lli > predNode = help.getPredecessorNode(successor.first.first,successor.first.second,ownIp,ownPort,true);
 
-	lli predecessorHash = predNode.second;
+    lli predecessorHash = predNode.second;
 
-	if(predecessorHash == -1 || predecessor.second == -1)
-		return;
+    if(predecessorHash == -1 || predecessor.second == -1)
+        return;
 
-	if(predecessorHash > id || (predecessorHash > id && predecessorHash < successor.second) || (predecessorHash < id && predecessorHash < successor.second)){
-		successor = predNode;
-	}
+    if(predecessorHash > id || (predecessorHash > id && predecessorHash < successor.second) || (predecessorHash < id && predecessorHash < successor.second)){
+        successor = predNode;
+    }
 
-	
+
 }
 
 /* check if current node's predecessor is still alive */
 void NodeInformation::checkPredecessor(){
-	if(predecessor.second == -1)
-		return;
+    if(predecessor.second == -1)
+        return;
 
-	HelperFunctions help;
-	string ip = predecessor.first.first;
-	int port = predecessor.first.second;
+    HelperFunctions help;
+    string ip = predecessor.first.first;
+    int port = predecessor.first.second;
 
-	if(help.isNodeAlive(ip,port) == false){
-		/* if node has same successor and predecessor then set node as it's successor itself */
-		if(predecessor.second == successor.second){
-			successor.first.first = sp.getIpAddress();
-			successor.first.second = sp.getPortNumber();
-			successor.second = id;
-			setSuccessorList(successor.first.first,successor.first.second,id);
-		}
-		predecessor.first.first = "";
-		predecessor.first.second = -1;
-		predecessor.second = -1;
-	}
+    if(help.isNodeAlive(ip,port) == false){
+        /* if node has same successor and predecessor then set node as it's successor itself */
+        if(predecessor.second == successor.second){
+            successor.first.first = sp.getIpAddress();
+            successor.first.second = sp.getPortNumber();
+            successor.second = id;
+            setSuccessorList(successor.first.first,successor.first.second,id);
+        }
+        predecessor.first.first = "";
+        predecessor.first.second = -1;
+        predecessor.second = -1;
+    }
 
 }
 
 /* check if current node's successor is still alive */
 void NodeInformation::checkSuccessor(){
-	if(successor.second == id)
-		return;
+    if(successor.second == id)
+        return;
 
-	HelperFunctions help;
-	string ip = successor.first.first;
-	int port = successor.first.second;
+    HelperFunctions help;
+    string ip = successor.first.first;
+    int port = successor.first.second;
 
-	if(help.isNodeAlive(ip,port) == false){
-		successor = successorList[2];
-		updateSuccessorList();
-	}
+    if(help.isNodeAlive(ip,port) == false){
+        successor = successorList[2];
+        updateSuccessorList();
+    }
 
 }
 
 void NodeInformation::notify(pair< pair<string,int> , lli > node){
 
-	/* get id of node and predecessor */
-	lli predecessorHash = predecessor.second;
-	lli nodeHash = node.second;
+    /* get id of node and predecessor */
+    lli predecessorHash = predecessor.second;
+    lli nodeHash = node.second;
 
-	predecessor = node;
+    predecessor = node;
 
-	/* if node's successor is node itself then set it's successor to this node */
-	if(successor.second == id){
-		successor = node;
-	}
+    /* if node's successor is node itself then set it's successor to this node */
+    if(successor.second == id){
+        successor = node;
+    }
 }
 
 void NodeInformation::fixFingers(){
 
-	HelperFunctions help;
+    HelperFunctions help;
 
-	//if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
-		//return;
-	//cout<<"in fix fingers - "<<successor.second<<endl;
-	
-	int next = 1;
-	lli mod = pow(2,M);
+    //if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
+    //return;
+    //cout<<"in fix fingers - "<<successor.second<<endl;
 
-	while(next <= M){
-		if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
-			return;
-		
-		lli newId = id + pow(2,next-1);
-		newId = newId % mod;
-		pair< pair<string,int> , lli > node = findSuccessor(newId);
-		if(node.first.first == "" || node.second == -1 || node.first.second == -1 )
-			break;
-		fingerTable[next] = node;
-		next++;	
-	}
+    int next = 1;
+    lli mod = pow(2,M);
+
+    while(next <= M){
+        if(help.isNodeAlive(successor.first.first,successor.first.second) == false)
+            return;
+
+        lli newId = id + pow(2,next-1);
+        newId = newId % mod;
+        pair< pair<string,int> , lli > node = findSuccessor(newId);
+        if(node.first.first == "" || node.second == -1 || node.first.second == -1 )
+            break;
+        fingerTable[next] = node;
+        next++;	
+    }
 
 }
 
 vector< pair< pair<string,int> , lli > > NodeInformation::getFingerTable(){
-	return fingerTable;
+    return fingerTable;
 }
 
 lli NodeInformation::getId(){
-	return id;
+    return id;
 }
 
 pair< pair<string,int> , lli > NodeInformation::getSuccessor(){
-	return successor;
+    return successor;
 }
 
 pair< pair<string,int> , lli > NodeInformation::getPredecessor(){
-	return predecessor;
+    return predecessor;
 }
 
 int NodeInformation::getNumKeys(){
@@ -395,17 +395,17 @@ int NodeInformation::getNumKeys(){
 }
 
 string NodeInformation::getValue(lli key){
-	if(dictionary.find(key) != dictionary.end()){
-		return dictionary[key];
-	}
-	else
-		return "";
+    if(dictionary.find(key) != dictionary.end()){
+        return dictionary[key];
+    }
+    else
+        return "";
 }
 
 vector< pair< pair<string,int> , lli > > NodeInformation::getSuccessorList(){
-	return successorList;
+    return successorList;
 }
 
 bool NodeInformation::getStatus(){
-	return isInRing;
+    return isInRing;
 }

@@ -16,14 +16,14 @@ class HelperFunctions{
         vector< pair<lli,string> > seperateKeysAndValues(string keysAndValues);
         vector< pair<string,int> > seperateSuccessorList(string succList);
         string splitSuccessorList(vector< pair< pair<string,int> , lli > > list);
-        
+
         lli getHash(string key);
         pair<string,int> getIpAndPort(string key);
-        
+
         bool isKeyValue(string id);
 
         bool isNodeAlive(string ip,int port);
-        
+
         void setServerDetails(struct sockaddr_in &server,string ip,int port);
         void setTimer(struct timeval &timer);
 

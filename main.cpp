@@ -20,7 +20,7 @@ void initialize(std::map<std::string, std::string> &args);
 
 int main(int argc, char* argv[]){
     std::map<std::string, std::string> arguments;
-    
+
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         size_t pos = arg.find('=');
@@ -109,7 +109,7 @@ void initialize(std::map<std::string, std::string> &args){
 
     cout<<"Now listening at port number "<<nodeInfo.sp.getPortNumber()<<endl;
     cout<<"Type help to know more\n";
-    
+
     // accept shell commands
     string command;
     while(1){

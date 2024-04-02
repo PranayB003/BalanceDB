@@ -31,21 +31,21 @@ void handle_request(int client_socket, const std::function<std::string(std::stri
     size_t start = request.find("\r\n\r\n") + 4;
     std::string data = request.substr(start);
     //std::cout << "Initial data length: " << data.size() << ", is npos: " << (start == std::string::npos) << '\n';
-    
+
     int payloadLen = extractContentLength(request);
     while (data.size() < payloadLen) {
         int bytes = read(client_socket, buffer, payloadLen - data.size());
         request.append(buffer, bytes);
         data = request.substr(start);
     }
-    
+
     //std::cout << "Request: " << request << std::endl;
 
     if (request.find("PUT") != std::string::npos) {
         // Handle PUT request
         response = callback("PUT", data);
     } else if (request.find("GET") != std::string::npos || 
-               request.find("POST") != std::string::npos) {
+            request.find("POST") != std::string::npos) {
         // Handle GET/POST request
         response = callback("GET", data);
     } else if (request.find("DELETE") != std::string::npos) {

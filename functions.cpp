@@ -44,7 +44,7 @@ void create(NodeInformation &nodeInfo){
 
     /* key to be hashed for a node is ip:port */
     string key = ip+":"+(to_string(port));   
-    
+
     lli hash = help.getHash(key);
 
     /* setting id, successor , successor list , predecessor ,finger table and status of node */
