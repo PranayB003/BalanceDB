@@ -1,73 +1,42 @@
-# Chord-DHT
-Implementation of Chord P2P Distributed Hash Table
+# BalanceDB
+A simple key-value store built on top of a Chord implementation that is retrofitted with 
+a Runtime Verification (RV) based module that provides better storage load balancing. The "power of
+2 choices" scheme has been used to facilitate better load balancing, and the system allows the selection 
+of any number of choices in general, not just two.
 
-More Information about Chord Protocol can be found here - https://en.wikipedia.org/wiki/Chord_(peer-to-peer)
+## Build
+Clone the project and run `make` to build the program.
+```bash
+git clone https://github.com/PranayB003/BalanceDB.git
+cd BalanceDB
+make # 'make debug' to compile with debug info for GDB
+```
 
-Typing "help" will show all supported commands
+## Usage
+The program provides a CLI for interacting with the chord node. Run `help` in the CLI to list available commands.
+In addition, the following options may be passed while invoking the program:
+- `mode=create | join,IP,PORT`: Creates a new Chord ring, or joins an existing ring in which the node IP:PORT is a member.
+- `port=PORT`: The port used by this node to communicate with other nodes in the ring.
+- `http=PORT`: Start a HTTP server on the given port. Useful for connecting clients to run automated tests and benchmarks.
+- `choices=NUM`: The number of hash functions used by the protocol to map a key to possible destination nodes. The least loaded
+node is chosen.
 
+Example:
+```bash
+./build/prog mode=create port=10000 http=8080 choices=2
+```
 
-## Implementation ##
-Each node will be assigned a unique ID (within 2^m (m is 48 in this case)) by hashing key which will be "ip:port" of that node by SHA-1 Algorithm
+The `samples/` directory contains a few useful scripts for testing and evaluation. The bulk of the evaluation of this project
+was done using the [Yahoo! Cloud Serving Benchmark (YCSB)](https://github.com/brianfrankcooper/YCSB). The YCSB client bindings and usage 
+instructions for BalanceDB can be found [here](https://github.com/PranayB003/YCSB/tree/master/balancedb).
 
-A node can create a DHT ring, other nodes can join the ring by contacting this node using it's ip and port number
+Example:
+```bash
+cd ./samples
 
-When a node creates or joins a ring, it spawns multiple threads which are responsible for tasks like listening to other nodes to join the
-ring, sending acknowledgement and other operations , doing stabilization tasks to ensure correct finger table entries, successor 
-and predecessor pointers and a Successor list.
+# Insert the key-value pairs in input.txt
+./insert.sh 50-input.txt http://localhost:8080 
 
-Each node contains m(48) entries in it's finger table.
-
-Each node also maintains a successor list having r(10) entries. This list finds it's use when a node's  successor leaves the ring,
-the node immediately assigns the next entry in the successor list as it's successor.
-
-Each node regularly asks for acknowledgement from it's successor and predecessor to know that they are still present in the ring. If
-no acknowledgement is received then they have left the ring and stabilization is done accordingly
-
-Each node keeps a map for storing key value pairs in it. When a key is entered, it is also assigned a unique ID, then it is stored in 
-a node whose ID is just greater than this key's ID
-
-When a node newly joins the ring, it gets all those keys from it's successor which should now belong to it
-
-When a node leaves the ring, it transfers all it's keys to it's successor
-
-m has been set to 48 in this implementation that means a maximum of 2^48 nodes can join the ring
-
-## Files ##
-
-main.cpp is the main file
-
-All important functions are inside the file functions.cpp
-
-A class named NodeInformation is made which contains all the information of a Node and all the functions which every node performs
-to maintain correct information about the ring. 
-
-Another class SocketAndPort is made which contains
-all the information about socket ,ip address and port number. Object of class SocketAndPort is inside NodeInformation class
-
-Another class HelperClass is made which contains all helper functions which are required by a node to perform various tasks
-
-
-## Supported Commands ##
-
-typing "help" in the terminal shows all supported commands
-
-__create__ - will create a DHT ring
-
-__join "ip" "port"__ - will connect to the main node running at IP address <ip> and Port Number <port>
-
-__printstate__ - will print successor, predecessor, fingerTable and Successor list of that node
-
-__print__ - will print all keys and values present in that node
-
-__port__ - will display port number on which node is listening
-
-__port "number"__ - will change port number to mentioned number if that port is free (will only run before the node has joined the ring)
-
-__put "key" "value"__ - will put key and value to the node it belongs to
-
-__get "key"__ - will get value of mentioned key
-
-
-## Execution ##
-
-A Makefile has also been included. Just type make to build the whole project
+# Get the number of keys stored at each node and clear their state
+./num-keys.sh localhost:8080 localhost:8081 
+```

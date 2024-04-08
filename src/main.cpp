@@ -100,7 +100,12 @@ void initialize(std::map<std::string, std::string> &args){
                     response = getWrapper(data, nodeInfo);
                 }
             } else if (method == "DELETE") {
-                response = delWrapper(data, nodeInfo);
+                if (data == "__LOCAL_ALL__") {
+                    nodeInfo.clearKeys();
+                    response = "OK";
+                } else {
+                    response = delWrapper(data, nodeInfo);
+                }
             } else {
                 response = "Invalid Request. Try `GET key` or `PUT key=val` instead.";
             }
